@@ -1,3 +1,6 @@
+#ifndef TP3_H
+#define TP3_H
+
 typedef struct t_Position
 {
     int numeroLigne;
@@ -25,3 +28,5 @@ typedef struct t_Index
 Position *init_Position();
 Position *init_Noeud();
 Position *init_Index();
+
+#endif
