@@ -42,5 +42,6 @@ void construireTexte(Index index, char *filename);
 // Fonctions ajoutées
 
 int compare(char *mot1, char *mot2);
+char *toLower(char *mot);
 
 #endif

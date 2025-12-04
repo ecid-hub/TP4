@@ -8,7 +8,7 @@ Position *init_Position()
     Position *res = malloc(sizeof(Position));
     res->numeroLigne = 0;
     res->numeroPhrase = 0;
-    res->ordre = NULL;
+    res->ordre = 0;
     res->suivant = NULL;
     return res;
 }
@@ -37,12 +37,16 @@ Index *init_Index()
 int compare(char *mot1, char *mot2)
 {
     char *c1 = mot1;
-    char *c2 = mot1;
+    char *c2 = mot2;
 
     while (*c1 != '\0' && *c2 != '\0' && *c1 == *c2)
     {
         c1++;
         c2++;
+    }
+    if (*c1 == '\0' && *c2 == '\0')
+    {
+        return 0;
     }
     if (*c1 == '\0')
     {
@@ -62,4 +66,9 @@ int compare(char *mot1, char *mot2)
     }
 
     return 0;
+}
+
+int main()
+{
+    printf("%d\n", compare("abc", "abd"));
 }
