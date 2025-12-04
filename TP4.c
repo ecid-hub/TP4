@@ -41,7 +41,20 @@ Position *ajouterPosition(Position *listeP, int ligne, int ordre, int phrase) {
     p-> numeroLigne = ligne ;
     p-> numeroPhrase = phrase ;
     p-> ordre = ordre ;
-    
+
+    if (listeP->numeroLigne >=   p->numeroLigne) { // On traite le cas où la position doit se mettre en tête de liste 
+        p->suivant = listeP ; 
+        listeP = p ; 
+    }
+
+    else {
+
+        
+
+
+
+
+    }
 
 
 
