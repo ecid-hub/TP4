@@ -26,7 +26,7 @@ typedef struct t_Index
 } Index;
 
 Position *init_Position();
-Position *init_Noeud();
-Position *init_Index();
+Noeud *init_Noeud(char *mot);
+Index *init_Index();
 
 #endif
