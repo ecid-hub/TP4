@@ -33,3 +33,17 @@ Index *init_Index()
     res->racine = NULL;
     return res;
 }
+
+
+
+Position *ajouterPosition(Position *listeP, int ligne, int ordre, int phrase) {
+    Position* p = init_Position() ; // On initialise la position que l'on va insérer dans la liste
+    p-> numeroLigne = ligne ;
+    p-> numeroPhrase = phrase ;
+    p-> ordre = ordre ;
+    
+
+
+
+
+}
