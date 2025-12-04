@@ -29,4 +29,20 @@ Position *init_Position();
 Noeud *init_Noeud(char *mot);
 Index *init_Index();
 
+
+// Fonctions de base 
+
+Position *ajouterPosition(Position *listeP, int ligne, int ordre, int phrase) ;
+int ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase) ;
+int indexerFichier(Index *index, char *filename) ;
+void afficherIndex(Index index) ;
+Noeud* rechercherMot(Index index, char *mot) ; 
+void afficherOccurencesMot(Index index, char *mot) ; 
+void construireTexte(Index index, char *filename) ; 
+
+
+
+
+
+
 #endif
