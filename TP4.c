@@ -33,3 +33,33 @@ Index *init_Index()
     res->racine = NULL;
     return res;
 }
+
+int compare(char *mot1, char *mot2)
+{
+    char *c1 = mot1;
+    char *c2 = mot1;
+
+    while (*c1 != '\0' && *c2 != '\0' && *c1 == *c2)
+    {
+        c1++;
+        c2++;
+    }
+    if (*c1 == '\0')
+    {
+        return -1;
+    }
+    if (*c2 == '\0')
+    {
+        return 1;
+    }
+    if (*c1 < *c2)
+    {
+        return -1;
+    }
+    if (*c1 > *c2)
+    {
+        return 1;
+    }
+
+    return 0;
+}
