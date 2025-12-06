@@ -1,10 +1,6 @@
 #ifndef TP3_H
 #define TP3_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 #include "TP4.h"
 
 typedef struct t_Position
@@ -35,11 +31,15 @@ Position *init_Position(int ligne, int ordre, int phrase);
 Noeud *init_Noeud(char *mot);
 Index *init_Index();
 
+void free_Index(Index **index);
+void free_Noeud(Noeud *node);
+void free_Position(Position *pos);
+
 // Fonctions de base
 void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
 void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
-int indexerFichier(Index *index, char *filename);
+int indexerFichier(Index *index, char const *filename);
 
 Noeud *rechercherMot(Index index, char *mot);
 void afficherOccurencesMot(Index index, char *mot);
