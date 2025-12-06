@@ -1,4 +1,1 @@
-#include "TP4.h"
-
-
-
+#include "TP4.c"

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "TP4.h"
 
 typedef struct t_Position
@@ -30,15 +31,13 @@ typedef struct t_Index
     int nbMotsTotal;
 } Index;
 
-Position *init_Position();
+Position *init_Position(int ligne, int ordre, int phrase);
 Noeud *init_Noeud(char *mot);
 Index *init_Index();
 
 // Fonctions de base
-
-Position *ajouterPosition(Position *listeP, int ligne, int ordre, int phrase);
-
-int ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
+void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
+void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
 int indexerFichier(Index *index, char *filename);
 
@@ -50,6 +49,7 @@ void construireTexte(Index index, char *filename);
 
 int compare(char *mot1, char *mot2);
 char into_minsucule(const char c);
+void toLower(char *word);
 
 // Fonctions ajoutées pour le debogage
 

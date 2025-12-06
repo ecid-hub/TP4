@@ -1,11 +1,13 @@
 #include "TP4.h"
 
-Position *init_Position()
+#define MAX_LINE_LENGTH 200
+
+Position *init_Position(int ligne, int ordre, int phrase)
 {
     Position *res = malloc(sizeof(Position));
-    res->numeroLigne = 0;
-    res->numeroPhrase = 0;
-    res->ordre = 0;
+    res->numeroLigne = ligne;
+    res->ordre = ordre;
+    res->numeroPhrase = phrase;
     res->suivant = NULL;
     return res;
 }
@@ -17,7 +19,7 @@ Noeud *init_Noeud(char *mot)
     res->gauche = NULL;
     res->listePositions = NULL;
     res->mot = mot;
-    res->nbOccurence = 1;
+    res->nbOccurence = 0;
 
     return res;
 }
@@ -31,60 +33,74 @@ Index *init_Index()
     return res;
 }
 
-Position *ajouterPosition(Position *listeP, int ligne, int ordre, int phrase)
+void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase)
 {
-    Position *p = init_Position();
-    p->numeroLigne = ligne;
-    p->numeroPhrase = phrase;
-    p->ordre = ordre;
-    p->suivant = NULL;
-    Position *pred = NULL;
-    Position *courant = listeP;
+    Position *p = init_Position(ligne, ordre, phrase);
 
     // Cas de liste vide
-    if (listeP == NULL)
+    if (mot->listePositions == NULL)
     {
-        return p;
-    } // Si la liste est vide on renvoie p
-
-    // Cas d'insertion en tête
-    if (listeP->numeroLigne > ligne || (listeP->numeroLigne == ligne && listeP->ordre > ordre))
-    {
-        p->suivant = listeP;
-        return p;
+        mot->nbOccurence++;
+        mot->listePositions = p;
+        return;
     }
+    Position *pred = NULL;
+    Position *courant = mot->listePositions;
 
     // parcours de la liste
-    while (courant != NULL)
+    while (courant != NULL && courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre))
     {
-        // Condition d'insertion : on a trouvé un élément plus grand
-        if (courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre))
-        {
-            p->suivant = courant;
-            pred->suivant = p;
-            return listeP;
-        }
-
         if (courant->numeroLigne == ligne && courant->ordre == ordre)
         {
-            return listeP; // Dans ce cas, on ne réinsère une position qui était déjà dans la liste ...
+            return; // Dans ce cas, on ne réinsère une position qui était déjà dans la liste ...
         }
         pred = courant;
         courant = courant->suivant; // Si on ne vérifie aucune conditions, on passe à celui d'après...
     }
 
-    // insertion en fin de liste, si on arrive ici c'est que p est tout au bout de ligne
-    pred->suivant = p;
-    return listeP;
+    // si previous_elem est NULL, ça veut dire qu'on n'a pas itéré une seule fois dans le while au dessus (le previous_elem est mis à jour à chaque itération), ce qui donne de cas:
+    // => on insère process en tête
+    if (pred == NULL)
+    {
+        p->suivant = mot->listePositions;
+        mot->listePositions = p;
+        mot->nbOccurence++;
+    }
+    else
+    {
+        // sinon on insère process après la liste après la tête :
+        // - soit à la fin
+        // - soit en plein millieu
+        // => dans tout les cas le même comportement est attendu
+        pred->suivant = p;
+        p->suivant = courant;
+        mot->nbOccurence++;
+    }
 }
 
 char into_minsucule(char c)
 { // Je transforme les majuscules en minuscules et laisse les minuscules comme elles sont*
     if (c <= 'Z' && c >= 'A')
     {
-        c += 'a' - 'A';
+        return c + 'a' - 'A';
+    }
+    else if (c < 'a' && c > 'z')
+    {
+        printf("!!! Trying to parse non letter char : '%c'", c);
     }
     return c;
+}
+
+void toLower(char *mot)
+{
+    for (int i = 0; mot[i]; i++)
+    {
+        if (mot[i] != '\0')
+        {
+
+            mot[i] = into_minsucule(mot[i]);
+        }
+    }
 }
 
 int compare(char *mot1, char *mot2)
@@ -121,60 +137,47 @@ int compare(char *mot1, char *mot2)
     return 0;
 }
 
-char *toLower(const char *mot)
-{
-    char *res = mot;
-    while (*res != '\0')
-    {
-        *res = tolower(*res);
-        res++;
-    }
-    return res;
-}
-
-int ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
+void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 {
 
-    Noeud *courant = index->racine, *pred = NULL;
+    Noeud *courant = index->racine;
+    Noeud *pred = NULL;
+
     if (courant == NULL)
     {
-        Noeud *n = init_Noeud(mot);
-        n->listePositions = ajouterPosition(NULL, ligne, ordre, phrase);
-        index->racine = n;
+        Noeud *node = init_Noeud(mot);
+        ajouterPosition(node, ligne, ordre, phrase);
+        index->racine = node;
         index->nbMotsTotal++;
         index->nbMotsDistincts++;
-        return 1;
+        return;
     } // On gère le cas où l'arbre est vide
 
     while (courant != NULL)
     { // Si le mot existe déjà dans l'indexe on s'arrête quand on est dedans, sinon on s'arrête quand on est sur un feuille
-        if (compare(courant->mot, mot) == -1)
+        int comp = compare(courant->mot, mot);
+
+        if (comp == -1)
         { // Dans ce cas, notre mot se trouve à droite de l'arbre
             pred = courant;
             courant = courant->droit;
         }
-
+        else if (comp == 1)
+        { // A l'inverse dans ce cas, c'est que notre mot doit être dans la partie gauche
+            pred = courant;
+            courant = courant->gauche;
+        }
         else
-        {
-            if (compare(courant->mot, mot) == 1)
-            { // A l'inverse dans ce cas, c'est que notre mot doit être dans la partie gauche
-                pred = courant;
-                courant = courant->gauche;
-            }
-
-            else
-            { // Dans ce cas, les deux mots sont identiques, donc inutile de créér unnouveau noeud
-                index->nbMotsTotal++;
-                courant->nbOccurence++;
-                courant->listePositions = ajouterPosition(courant->listePositions, ligne, ordre, phrase);
-                return 1; // On eut directement mettre fin à la fonction dans cas.
-            }
+        { // Dans ce cas, les deux mots sont identiques, donc inutile de créér unnouveau noeud
+            index->nbMotsTotal++;
+            ajouterPosition(courant, ligne, ordre, phrase);
+            return; // On eut directement mettre fin à la fonction dans cas.
         }
 
     } // Ici, nous sommes arrivés au moment où pred est une feuille.
 
     Noeud *n = init_Noeud(mot);
-    n->listePositions = ajouterPosition(NULL, ligne, ordre, phrase);
+    ajouterPosition(n, ligne, ordre, phrase);
     index->nbMotsTotal++;
     index->nbMotsDistincts++;
     if (compare(pred->mot, mot) == 1)
@@ -183,6 +186,54 @@ int ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
     }
     else
         pred->droit = n; // La cas d'égalité a déjà été traité plus haut
+    return;
+}
+
+int indexerFichier(Index *index, char *filename)
+{
+    const char *separators = " ,.-!";
+
+    FILE *file = fopen(filename, "r");
+    char line[MAX_LINE_LENGTH];
+    int ligne = 0;
+
+    while (1)
+    {
+        char *ret = fgets(line, sizeof(char) * MAX_LINE_LENGTH, file); // on lit la ligne brute
+        if (ret == NULL)
+        {
+            break; // EOF REACHED
+        }
+
+        int ordre = 0;
+        int phrase = 0;
+        char *tok = strtok(ret, separators);
+        while (tok != NULL)
+        {
+            char *fromPoint = strchr(tok, '.');
+            if (fromPoint != NULL)
+            {
+                int pointIndex = fromPoint - tok;
+                fromPoint++;
+
+                char beforePoint[pointIndex];
+                strncpy(beforePoint, tok, pointIndex);
+                ajouterOccurence(index, beforePoint, ligne, ordre, phrase);
+                int ordre = 0;
+                phrase++;
+                ajouterOccurence(index, fromPoint, ligne, ordre, phrase);
+            }
+            else
+            {
+                ajouterOccurence(index, tok, ligne, ordre, phrase);
+            }
+            tok = strtok(NULL, separators);
+            ordre++;
+        }
+        ligne++;
+    }
+    // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
+
     return 1;
 }
 
@@ -234,31 +285,35 @@ int main()
 {
     Index *index = init_Index();
 
-    printf("Test 1: Ajout de différents mots\n");
+    // printf("Test 1: Ajout de différents mots\n");
+    // ajouterOccurence(index, "chat", 1, 1, 1);
+    // ajouterOccurence(index, "chien", 1, 2, 1);
+    // ajouterOccurence(index, "oiseau", 2, 1, 1);
+    // afficherIndex(index);
+
+    // printf("Test 2: Ajout d'occurrences du même mot\n");
+    // ajouterOccurence(index, "chat", 2, 3, 1);
+    // ajouterOccurence(index, "chat", 3, 1, 2);
+    // afficherIndex(index);
+
+    // printf("Test 3: Ajout d'un mot déjà existant (même position)\n");
+    // ajouterOccurence(index, "chat", 1, 1, 1); // Doublon
+    // afficherIndex(index);
+
+    // printf("Test 4: Construction d'un arbre plus complet\n");
+    // ajouterOccurence(index, "arbre", 4, 1, 1);
+    // ajouterOccurence(index, "maison", 4, 2, 1);
+    // ajouterOccurence(index, "enfant", 5, 1, 2);
+    // ajouterOccurence(index, "soleil", 5, 2, 2);
+    // afficherIndex(index);
+
+    // printf("Test 5: Vérification du comptage total\n");
+    // printf("Nombre total de mots indexés: %d\n", index->nbMotsTotal);
+    // printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
+
     ajouterOccurence(index, "chat", 1, 1, 1);
-    ajouterOccurence(index, "chien", 1, 2, 1);
-    ajouterOccurence(index, "oiseau", 2, 1, 1);
+    ajouterOccurence(index, "chat", 1, 1, 1);
     afficherIndex(index);
-
-    printf("Test 2: Ajout d'occurrences du même mot\n");
-    ajouterOccurence(index, "chat", 2, 3, 1);
-    ajouterOccurence(index, "chat", 3, 1, 2);
-    afficherIndex(index);
-
-    printf("Test 3: Ajout d'un mot déjà existant (même position)\n");
-    ajouterOccurence(index, "chat", 1, 1, 1); // Doublon
-    afficherIndex(index);
-
-    printf("Test 4: Construction d'un arbre plus complet\n");
-    ajouterOccurence(index, "arbre", 4, 1, 1);
-    ajouterOccurence(index, "maison", 4, 2, 1);
-    ajouterOccurence(index, "enfant", 5, 1, 2);
-    ajouterOccurence(index, "soleil", 5, 2, 2);
-    afficherIndex(index);
-
-    printf("Test 5: Vérification du comptage total\n");
-    printf("Nombre total de mots indexés: %d\n", index->nbMotsTotal);
-    printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
 
     return 0;
 }
