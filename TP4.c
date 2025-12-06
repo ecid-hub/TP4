@@ -126,6 +126,30 @@ void toLower(char *mot)
     }
 }
 
+// char *split(char *str, char sep)
+// {
+//     return nullptr;
+// }
+
+char *trim(char *str)
+{
+    char *buff = malloc(sizeof(char) * 300);
+    int indexBuff = 0;
+    int i = 0;
+    char *ptr = str;
+    while (*ptr != '\0')
+    {
+        if (*ptr != ' ' && *ptr != '\n' && *ptr != '.')
+        {
+            buff[indexBuff++] = *ptr;
+        }
+        ptr++;
+    }
+    buff[indexBuff++] = '\0';
+    buff = realloc(buff, sizeof(char) * indexBuff);
+    return buff;
+}
+
 int compare(char *mot1, char *mot2)
 {
     char *c1 = mot1;
@@ -222,7 +246,8 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 
 int indexerFichier(Index *index, char const *filename)
 {
-    const char *separators = " ,.-!";
+    const char *separators = " ";
+    // const char *separators = " ,.-!";
 
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
@@ -241,21 +266,15 @@ int indexerFichier(Index *index, char const *filename)
         char *tok = strtok(ret, separators);
         while (tok != NULL)
         {
-            char *fromPoint = strchr(tok, '.');
-            if (fromPoint != NULL)
-            {
-                int pointIndex = (int)(fromPoint - tok);
-                fromPoint++;
+            char *buff = malloc(strlen(tok) * sizeof(char));
+            char *hasPoint = strchr(tok, '.');
 
-                char beforePoint[pointIndex];
-                strncpy(beforePoint, tok, pointIndex);
-                ajouterOccurence(index, beforePoint, ligne, ordre, phrase);
-                phrase++;
-                ajouterOccurence(index, fromPoint, ligne, ordre, phrase);
-            }
-            else
+            buff = trim(tok);
+            ajouterOccurence(index, buff, ligne, ordre, phrase);
+
+            if (hasPoint != NULL)
             {
-                ajouterOccurence(index, tok, ligne, ordre, phrase);
+                phrase++;
             }
             tok = strtok(NULL, separators);
             ordre++;
@@ -315,33 +334,34 @@ int main()
 {
     Index *index = init_Index();
 
-    printf("Test 1: Ajout de différents mots\n");
-    ajouterOccurence(index, "chat", 1, 1, 1);
-    ajouterOccurence(index, "chien", 1, 2, 1);
-    ajouterOccurence(index, "oiseau", 2, 1, 1);
-    afficherIndex(index);
+    indexerFichier(index, "animaux");
 
-    printf("Test 2: Ajout d'occurrences du même mot\n");
-    ajouterOccurence(index, "chat", 2, 3, 1);
-    ajouterOccurence(index, "chat", 3, 1, 2);
-    afficherIndex(index);
+    // printf("Test 1: Ajout de différents mots\n");
+    // ajouterOccurence(index, "chat", 1, 1, 1);
+    // ajouterOccurence(index, "chien", 1, 2, 1);
+    // ajouterOccurence(index, "oiseau", 2, 1, 1);
+    // afficherIndex(index);
 
-    printf("Test 3: Ajout d'un mot déjà existant (même position)\n");
-    ajouterOccurence(index, "chat", 1, 1, 1); // Doublon
-    afficherIndex(index);
+    // printf("Test 2: Ajout d'occurrences du même mot\n");
+    // ajouterOccurence(index, "chat", 2, 3, 1);
+    // ajouterOccurence(index, "chat", 3, 1, 2);
+    // afficherIndex(index);
 
-    printf("Test 4: Construction d'un arbre plus complet\n");
-    ajouterOccurence(index, "arbre", 4, 1, 1);
-    ajouterOccurence(index, "maison", 4, 2, 1);
-    ajouterOccurence(index, "enfant", 5, 1, 2);
-    ajouterOccurence(index, "soleil", 5, 2, 2);
-    afficherIndex(index);
+    // printf("Test 3: Ajout d'un mot déjà existant (même position)\n");
+    // ajouterOccurence(index, "chat", 1, 1, 1); // Doublon
+    // afficherIndex(index);
 
-    printf("Test 5: Vérification du comptage total\n");
-    printf("Nombre total de mots indexés: %d\n", index->nbMotsTotal);
-    printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
+    // printf("Test 4: Construction d'un arbre plus complet\n");
+    // ajouterOccurence(index, "arbre", 4, 1, 1);
+    // ajouterOccurence(index, "maison", 4, 2, 1);
+    // ajouterOccurence(index, "enfant", 5, 1, 2);
+    // ajouterOccurence(index, "soleil", 5, 2, 2);
+    // afficherIndex(index);
 
-    // indexerFichier(index, "lorem");
+    // printf("Test 5: Vérification du comptage total\n");
+    // printf("Nombre total de mots indexés: %d\n", index->nbMotsTotal);
+    // printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
+
     afficherIndex(index);
     free_Index(&index);
 
