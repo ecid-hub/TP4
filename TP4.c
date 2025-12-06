@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "TP4.h"
 
 Position *init_Position()
@@ -68,7 +69,19 @@ int compare(char *mot1, char *mot2)
     return 0;
 }
 
+char *toLower(const char *mot)
+{
+    char *res = mot;
+    while (*res != '\0')
+    {
+        *res = tolower(*res);
+        res++;
+    }
+    return res;
+}
+
 int main()
 {
+    printf("%s\n", toLower("test"));
     printf("%d\n", compare("abc", "abd"));
 }
