@@ -37,19 +37,16 @@ void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase)
 {
     Position *p = init_Position(ligne, ordre, phrase);
 
-    // Cas de liste vide
-    if (mot->listePositions == NULL)
-    {
-        mot->nbOccurence++;
-        mot->listePositions = p;
-        return;
-    }
     Position *pred = NULL;
     Position *courant = mot->listePositions;
 
     // parcours de la liste
-    while (courant != NULL && courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre))
+    while (courant != NULL )
     {
+        if ((courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre)))
+        {
+            break;
+        }
         if (courant->numeroLigne == ligne && courant->ordre == ordre)
         {
             return; // Dans ce cas, on ne réinsère une position qui était déjà dans la liste ...
@@ -313,6 +310,10 @@ int main()
 
     ajouterOccurence(index, "chat", 1, 1, 1);
     ajouterOccurence(index, "chat", 1, 1, 1);
+    ajouterOccurence(index, "chat", 2, 2, 1);
+    ajouterOccurence(index, "chat", 2, 2, 1);
+    ajouterOccurence(index, "chat", 2, 1, 1);
+    ajouterOccurence(index, "chat", 2, 1, 1);
     afficherIndex(index);
 
     return 0;
