@@ -49,6 +49,7 @@ void free_Noeud(Noeud *node)
     {
         free_Noeud(node->gauche);
         free_Noeud(node->droit);
+        free(node->mot);
         free_Position(node->listePositions);
         free(node);
     }
@@ -71,12 +72,8 @@ void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase)
     Position *courant = mot->listePositions;
 
     // parcours de la liste
-    while (courant != NULL)
+    while (courant != NULL && !(courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre)))
     {
-        if ((courant->numeroLigne > ligne || (courant->numeroLigne == ligne && courant->ordre > ordre)))
-        {
-            break;
-        }
         if (courant->numeroLigne == ligne && courant->ordre == ordre)
         {
             return; // Dans ce cas, on ne réinsère une position qui était déjà dans la liste ...
@@ -125,11 +122,6 @@ void toLower(char *mot)
         }
     }
 }
-
-// char *split(char *str, char sep)
-// {
-//     return nullptr;
-// }
 
 char *trim(char *str)
 {
@@ -247,7 +239,6 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 int indexerFichier(Index *index, char const *filename)
 {
     const char *separators = " ";
-    // const char *separators = " ,.-!";
 
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
@@ -266,10 +257,9 @@ int indexerFichier(Index *index, char const *filename)
         char *tok = strtok(ret, separators);
         while (tok != NULL)
         {
-            char *buff = malloc(strlen(tok) * sizeof(char));
             char *hasPoint = strchr(tok, '.');
 
-            buff = trim(tok);
+            char *buff = trim(tok);
             ajouterOccurence(index, buff, ligne, ordre, phrase);
 
             if (hasPoint != NULL)
@@ -279,6 +269,7 @@ int indexerFichier(Index *index, char const *filename)
             tok = strtok(NULL, separators);
             ordre++;
         }
+        free(tok);
         ligne++;
     }
     // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char

@@ -50,7 +50,6 @@ void construireTexte(Index index, char *filename);
 int compare(char *mot1, char *mot2);
 char into_minsucule(const char c);
 void toLower(char *word);
-char *split(char *str, char sep);
 char *trim(char *str);
 
 // Fonctions ajoutées pour le debogage
