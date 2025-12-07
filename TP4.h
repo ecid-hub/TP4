@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+// Indexation primaire
 typedef struct t_Position
 {
     int numeroLigne;
@@ -20,11 +21,27 @@ typedef struct t_Noeud
     struct t_Noeud *droit;
 } Noeud;
 
+// Indexation secondaire
+typedef struct t_Mot
+{
+    Noeud *noeud;
+    struct t_Mot *suivant;
+} Mot;
+
+typedef struct t_Phrase
+{
+    struct t_Phrase *suivante;
+    Mot *mots;
+
+} Phrase;
+
 typedef struct t_Index
 {
     Noeud *racine;
     int nbMotsDistincts;
     int nbMotsTotal;
+    int nbPhrasesTotal;
+    Phrase *phrases;
 } Index;
 
 Position *init_Position(int ligne, int ordre, int phrase);
@@ -36,27 +53,36 @@ void free_Noeud(Noeud *node);
 void free_Position(Position *pos);
 
 // Fonctions de base
-void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
+Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
 void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
 int indexerFichier(Index *index, char const *filename);
 
-Noeud *rechercherMot(Index index, char *mot);
-void afficherOccurencesMot(Index index, char *mot);
-void construireTexte(Index index, char *filename);
+Noeud *rechercherMot(Index *index, const char *mot);
+void afficherOccurencesMot(Index *index, const char *mot);
+void construireTexte(Index *index, const char *filename);
 
 // Fonctions ajoutées
 
-int compare(char *mot1, char *mot2);
+int compare(const char *mot1, const char *mot2);
 char into_minsucule(const char c);
-void toLower(char *word);
-char *trim(char *str);
+void toLower(char *str);
+void trim(char *str);
+Noeud *get_node(Noeud *node, const char *mot);
+
+Phrase *init_Phrase();
+void add_Phrase(Index *index, Phrase *sent);
+Phrase *get_Phrase(Index *index, int number);
+Mot *init_Mot(Noeud *node);
+void add_Mot(Phrase *sent, Noeud *node);
 
 // Fonctions ajoutées pour le debogage
 
 void afficherPositions(Position *liste);
 void afficherArbre(Noeud *noeud, int niveau);
 void afficherIndex(Index *index);
+void afficherPhrase(Phrase *sent);
+void afficherMot(Mot *word);
 void renderPlantUML(Noeud *node, int level, FILE *handle);
 
 #endif

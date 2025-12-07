@@ -31,7 +31,9 @@ Index *init_Index()
     Index *res = malloc(sizeof(Index));
     res->nbMotsDistincts = 0;
     res->nbMotsTotal = 0;
+    res->nbPhrasesTotal = 0;
     res->racine = NULL;
+    res->phrases = NULL;
     return res;
 }
 
@@ -122,9 +124,9 @@ void toLower(char *mot)
     }
 }
 
-char *trim(char *str)
+void trim(char *str)
 {
-    char *buff = malloc(sizeof(char) * 300);
+    char buff[300 * sizeof(char)];
     int indexBuff = 0;
     int i = 0;
     char *ptr = str;
@@ -137,37 +139,36 @@ char *trim(char *str)
         ptr++;
     }
     buff[indexBuff++] = '\0';
-    buff = realloc(buff, sizeof(char) * indexBuff);
-    return buff;
+    strcpy(str, buff);
 }
 
-int compare(char *mot1, char *mot2)
+int compare(const char *mot1, const char *mot2)
 {
-    char *c1 = mot1;
-    char *c2 = mot2;
+    const char *c1 = mot1;
+    const char *c2 = mot2;
 
-    while (into_minsucule(*c1) != '\0' && into_minsucule(*c2) != '\0' && into_minsucule(*c1) == into_minsucule(*c2))
+    while (*c1 != '\0' && *c2 != '\0' && *c1 == *c2)
     {
         c1++;
         c2++;
     }
-    if (into_minsucule(*c1) == '\0' && into_minsucule(*c2) == '\0')
+    if ((*c1) == '\0' && (*c2) == '\0')
     {
         return 0;
     }
-    if (into_minsucule(*c1) == '\0')
+    if ((*c1) == '\0')
     {
         return -1;
     }
-    if (into_minsucule(*c2) == '\0')
+    if ((*c2) == '\0')
     {
         return 1;
     }
-    if (into_minsucule(*c1) < into_minsucule(*c2))
+    if ((*c1) < (*c2))
     {
         return -1;
     }
-    if (into_minsucule(*c1) > into_minsucule(*c2))
+    if ((*c1) > (*c2))
     {
         return 1;
     }
@@ -175,12 +176,12 @@ int compare(char *mot1, char *mot2)
     return 0;
 }
 
-void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
+Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 {
     if (index == NULL)
     {
         printf("NULL INDEX\n");
-        return;
+        return NULL;
     }
 
     Noeud *courant = index->racine;
@@ -193,7 +194,7 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
         index->racine = node;
         index->nbMotsTotal++;
         index->nbMotsDistincts++;
-        return;
+        return node;
     } // On gère le cas où l'arbre est vide
 
     while (courant != NULL)
@@ -218,7 +219,7 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
             // Dans ce cas, les deux mots sont identiques, donc inutile de créér unnouveau noeud
             index->nbMotsTotal++;
             ajouterPosition(courant, ligne, ordre, phrase);
-            return; // On eut directement mettre fin à la fonction dans cas.
+            return courant; // On eut directement mettre fin à la fonction dans cas.
         }
     } // Ici, nous sommes arrivés au moment où pred est une feuille.
 
@@ -233,6 +234,8 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
     }
     else
         pred->droit = n; // La cas d'égalité a déjà été traité plus haut
+
+    return n;
 }
 
 int indexerFichier(Index *index, char const *filename)
@@ -243,6 +246,7 @@ int indexerFichier(Index *index, char const *filename)
     char line[MAX_LINE_LENGTH];
     int ligne = 0;
 
+    Phrase *currentSent = init_Phrase();
     while (1)
     {
         char *ret = fgets(line, sizeof(char) * MAX_LINE_LENGTH, file); // on lit la ligne brute
@@ -258,12 +262,18 @@ int indexerFichier(Index *index, char const *filename)
         {
             char *hasPoint = strchr(tok, '.');
 
-            char *buff = trim(tok);
-            ajouterOccurence(index, buff, ligne, ordre, phrase);
+            char *buff = malloc(strlen(tok) + 1);
+            strcpy(buff, tok);
+            trim(buff);
+            toLower(buff);
+            Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
+            add_Mot(currentSent, node);
 
             if (hasPoint != NULL)
             {
+                add_Phrase(index, currentSent);
                 phrase++;
+                currentSent = init_Phrase();
             }
             tok = strtok(NULL, separators);
             ordre++;
@@ -274,6 +284,96 @@ int indexerFichier(Index *index, char const *filename)
     // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
 
     return 1;
+}
+
+Noeud *rechercherMot(Index *index, const char *mot)
+{
+    get_node(index->racine, mot);
+}
+
+void afficherOccurencesMot(Index *index, const char *mot)
+{
+    if (index == NULL)
+        return;
+    Noeud *node = rechercherMot(index, mot);
+    if (node != NULL)
+    {
+    }
+}
+
+Noeud *get_node(Noeud *node, const char *mot)
+{
+    if (node == NULL)
+    {
+        return NULL;
+    }
+    int comp = compare(node->mot, mot);
+
+    if (comp == -1)
+    {
+        // Dans ce cas, notre mot se trouve à droite de l'arbre
+        get_node(node->droit, mot);
+    }
+    else if (comp == 1)
+    {
+        // A l'inverse dans ce cas, c'est que notre mot doit être dans la partie gauche
+        get_node(node->gauche, mot);
+    }
+    else
+    {
+        // Dans ce cas, les deux mots sont identiques, donc inutile de créér unnouveau noeud
+        return node;
+    }
+}
+
+Phrase *init_Phrase()
+{
+    Phrase *sent = malloc(sizeof(Phrase));
+    sent->mots = NULL;
+    sent->suivante = NULL;
+    return sent;
+}
+
+void add_Phrase(Index *index, Phrase *sent)
+{
+    if (index == NULL || sent == NULL)
+    {
+        return;
+    }
+
+    index->nbPhrasesTotal++;
+    sent->suivante = index->phrases;
+    index->phrases = sent;
+}
+
+Phrase *get_Phrase(Index *index, int number)
+{
+    if (index == NULL)
+        return NULL;
+    Phrase *curr = index->phrases;
+    for (int i = 0; i < (index->nbPhrasesTotal - 1 - number); i++)
+    {
+        curr = curr->suivante;
+    }
+    return curr;
+}
+
+Mot *init_Mot(Noeud *node)
+{
+    Mot *word = malloc(sizeof(Mot));
+    word->noeud = node;
+    word->suivant = NULL;
+    return word;
+}
+
+void add_Mot(Phrase *sent, Noeud *node)
+{
+    if (sent == NULL || node == NULL)
+        return;
+
+    Mot *word = init_Mot(node);
+    word->suivant = sent->mots;
+    sent->mots = word;
 }
 
 // Fonctions d'affichage pour le débogage
@@ -320,6 +420,26 @@ void afficherIndex(Index *index)
     renderPlantUML(index->racine, 1, handle);
     fclose(handle);
     printf("===========================\n\n");
+}
+
+void afficherPhrase(Phrase *sent)
+{
+    if (sent != NULL)
+    {
+        afficherPhrase(sent->suivante);
+
+        afficherMot(sent->mots);
+        printf("\n");
+    }
+}
+
+void afficherMot(Mot *word)
+{
+    if (word != NULL)
+    {
+        afficherMot(word->suivant);
+        printf("%s ", word->noeud->mot);
+    }
 }
 
 void renderPlantUML(Noeud *node, int level, FILE *handle)
@@ -399,6 +519,8 @@ int main()
     // printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
 
     afficherIndex(index);
+    afficherArbre(rechercherMot(index, "oiseau"), 0);
+    afficherPhrase(index->phrases);
     free_Index(&index);
 
     return 0;
