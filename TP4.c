@@ -166,23 +166,23 @@ int compare(const char *mot1, const char *mot2)
         c1++;
         c2++;
     }
-    if ((*c1) == '\0' && (*c2) == '\0')
+    if (*c1 == '\0' && *c2 == '\0')
     {
         return 0;
     }
-    if ((*c1) == '\0')
+    if (*c1 == '\0')
     {
         return -1;
     }
-    if ((*c2) == '\0')
+    if (*c2 == '\0')
     {
         return 1;
     }
-    if ((*c1) < (*c2))
+    if (*c1 < *c2)
     {
         return -1;
     }
-    if ((*c1) > (*c2))
+    if (*c1 > *c2)
     {
         return 1;
     }
@@ -190,6 +190,7 @@ int compare(const char *mot1, const char *mot2)
     return 0;
 }
 
+// TODO: 2 case redondants, peuvent être absorbés par la boucle
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 {
     if (index == NULL)
@@ -201,6 +202,7 @@ Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phras
     Noeud *courant = index->racine;
     Noeud *pred = NULL;
 
+    // redondant
     if (courant == NULL)
     {
         Noeud *node = init_Noeud(mot);
@@ -237,6 +239,7 @@ Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phras
         }
     } // Ici, nous sommes arrivés au moment où pred est une feuille.
 
+    // TODO: redondant
     Noeud *n = init_Noeud(mot);
     ajouterPosition(n, ligne, ordre, phrase);
     index->nbMotsTotal++;
