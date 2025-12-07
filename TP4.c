@@ -337,9 +337,20 @@ void renderPlantUML(Noeud *node, int level, FILE *handle)
         stars[i] = '*';
     }
     stars[level] = '\0';
+
     if (node != NULL)
     {
-        fprintf(handle, "%s %s\n", stars, node->mot);
+        fprintf(handle, "%s:%s\n", stars, node->mot);
+        fprintf(handle, "<code>\n");
+        Position *cur = node->listePositions;
+        while (cur != NULL)
+        {
+            fprintf(handle, "(l:%d, o:%d, p:%d)\n", cur->numeroLigne, cur->ordre, cur->numeroPhrase);
+            cur = cur->suivant;
+        }
+
+        fprintf(handle, "</code>\n;\n");
+
         renderPlantUML(node->gauche, level + 1, handle);
         renderPlantUML(node->droit, level + 1, handle);
     }
