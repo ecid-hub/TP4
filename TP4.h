@@ -1,7 +1,7 @@
 #ifndef TP3_H
 #define TP3_H
 
-#include "TP4.h"
+#include <stdio.h>
 
 typedef struct t_Position
 {
@@ -57,5 +57,6 @@ char *trim(char *str);
 void afficherPositions(Position *liste);
 void afficherArbre(Noeud *noeud, int niveau);
 void afficherIndex(Index *index);
+void renderPlantUML(Noeud *node, int level, FILE *handle);
 
 #endif

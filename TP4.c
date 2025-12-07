@@ -1,5 +1,4 @@
 #include "TP4.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -283,11 +282,11 @@ void afficherPositions(Position *liste)
     Position *courant = liste;
     while (courant != NULL)
     {
-        printf("      (ligne:%d, ordre:%d, phrase:%d)",
+        printf("(l:%d, o:%d, p:%d)",
                courant->numeroLigne, courant->ordre, courant->numeroPhrase);
         courant = courant->suivant;
         if (courant != NULL)
-            printf(" -> ");
+            printf("->");
     }
     printf("\n");
 }
@@ -301,11 +300,11 @@ void afficherArbre(Noeud *noeud, int niveau)
 
     for (int i = 0; i < niveau; i++)
         printf("    ");
-    printf("'%s' (occ:%d)\n", noeud->mot, noeud->nbOccurence);
+    printf("'%s' (occ:%d) :   ", noeud->mot, noeud->nbOccurence);
 
-    for (int i = 0; i < niveau; i++)
-        printf("    ");
-    printf("  Positions: ");
+    // for (int i = 0; i < niveau; i++)
+    //     printf("    ");
+    // printf("  Positions: ");
     afficherPositions(noeud->listePositions);
 
     afficherArbre(noeud->gauche, niveau + 1);
@@ -316,8 +315,43 @@ void afficherIndex(Index *index)
     printf("\n========== INDEX ==========\n");
     printf("Nombre total de mots: %d\n", index->nbMotsTotal);
     printf("Nombre de mots distincts: %d\n\n", index->nbMotsDistincts);
-    afficherArbre(index->racine, 0);
+    // afficherArbre(index->racine, 0);
+    FILE *handle = fopen("tree.plantuml", "w");
+    renderPlantUML(index->racine, 1, handle);
+    fclose(handle);
     printf("===========================\n\n");
+}
+
+void renderPlantUML(Noeud *node, int level, FILE *handle)
+{
+
+    if (level == 1)
+    {
+        fprintf(handle, "@startmindmap index\n");
+        fprintf(handle, "top to bottom direction\n\n");
+    }
+
+    char stars[level + 1];
+    for (int i = 0; i < level; i++)
+    {
+        stars[i] = '*';
+    }
+    stars[level] = '\0';
+    if (node != NULL)
+    {
+        fprintf(handle, "%s %s\n", stars, node->mot);
+        renderPlantUML(node->gauche, level + 1, handle);
+        renderPlantUML(node->droit, level + 1, handle);
+    }
+    else
+    {
+        fprintf(handle, "%s %s\n", stars, "NULL");
+    }
+
+    if (level == 1)
+    {
+        fprintf(handle, "@endmindmap\n");
+    }
 }
 
 // Programme de test
