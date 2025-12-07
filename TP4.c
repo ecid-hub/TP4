@@ -103,7 +103,7 @@ void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase)
     }
 }
 
-char into_minsucule(char c)
+char char_low(char c)
 {
     // Je transforme les majuscules en minuscules et laisse les minuscules comme elles sont*
     if (c <= 'Z' && c >= 'A')
@@ -113,18 +113,32 @@ char into_minsucule(char c)
     return c;
 }
 
-void toLower(char *mot)
+char char_cap(const char c)
 {
-    for (int i = 0; mot[i]; i++)
+    if (c <= 'z' && c >= 'a')
     {
-        if (mot[i] != '\0')
+        return c + 'A' - 'a';
+    }
+    return c;
+}
+
+void str_low(char *str)
+{
+    for (int i = 0; str[i]; i++)
+    {
+        if (str[i] != '\0')
         {
-            mot[i] = into_minsucule(mot[i]);
+            str[i] = char_low(str[i]);
         }
     }
 }
 
-void trim(char *str)
+void str_cap(char *str)
+{
+    str[0] = char_cap(str[0]);
+}
+
+void str_trim(char *str)
 {
     char buff[300 * sizeof(char)];
     int indexBuff = 0;
@@ -264,8 +278,8 @@ int indexerFichier(Index *index, char const *filename)
 
             char *buff = malloc(strlen(tok) + 1);
             strcpy(buff, tok);
-            trim(buff);
-            toLower(buff);
+            str_trim(buff);
+            str_low(buff);
             Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
             add_Mot(currentSent, node);
 
@@ -295,9 +309,26 @@ void afficherOccurencesMot(Index *index, const char *mot)
 {
     if (index == NULL)
         return;
-    Noeud *node = rechercherMot(index, mot);
+
+    char *word = malloc(strlen(mot) + 1);
+    strcpy(word, mot);
+    str_trim(word);
+    str_low(word);
+
+    Noeud *node = rechercherMot(index, word);
+    free(word);
     if (node != NULL)
     {
+        printf("Mot = \"%s\"\n", node->mot);
+        printf("Occurences = %d\n", node->nbOccurence);
+        Position *pos = node->listePositions;
+        for (int i = 0; i < node->nbOccurence; i++)
+        {
+            printf("| Ligne %d, mot %d : ", pos->numeroLigne, pos->ordre);
+            Phrase *sent = get_Phrase(index, pos->numeroPhrase);
+            afficherPhrase(sent);
+            pos = pos->suivant;
+        }
     }
 }
 
@@ -426,19 +457,27 @@ void afficherPhrase(Phrase *sent)
 {
     if (sent != NULL)
     {
-        afficherPhrase(sent->suivante);
-
-        afficherMot(sent->mots);
-        printf("\n");
+        afficherMotRecurs(sent->mots);
+        printf(".\n");
     }
 }
 
-void afficherMot(Mot *word)
+void afficherMotRecurs(Mot *word)
 {
     if (word != NULL)
     {
-        afficherMot(word->suivant);
-        printf("%s ", word->noeud->mot);
+        char *buff = word->noeud->mot;
+        if (word->suivant == NULL)
+        {
+            buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
+            strcpy(buff, word->noeud->mot);
+            str_cap(buff);
+        }
+        else
+        {
+            afficherMotRecurs(word->suivant);
+        }
+        printf(" %s", buff);
     }
 }
 
@@ -519,8 +558,9 @@ int main()
     // printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
 
     afficherIndex(index);
-    afficherArbre(rechercherMot(index, "oiseau"), 0);
-    afficherPhrase(index->phrases);
+    // afficherArbre(rechercherMot(index, "oiseau"), 0);
+    // afficherPhrase(index->phrases);
+    afficherOccurencesMot(index, "oiseau");
     free_Index(&index);
 
     return 0;

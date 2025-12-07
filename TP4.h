@@ -2,6 +2,7 @@
 #define TP3_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 // Indexation primaire
 typedef struct t_Position
@@ -65,9 +66,11 @@ void construireTexte(Index *index, const char *filename);
 // Fonctions ajoutées
 
 int compare(const char *mot1, const char *mot2);
-char into_minsucule(const char c);
-void toLower(char *str);
-void trim(char *str);
+char char_low(const char c);
+char char_cap(const char c);
+void str_low(char *str);
+void str_cap(char *str);
+void str_trim(char *str);
 Noeud *get_node(Noeud *node, const char *mot);
 
 Phrase *init_Phrase();
@@ -82,7 +85,7 @@ void afficherPositions(Position *liste);
 void afficherArbre(Noeud *noeud, int niveau);
 void afficherIndex(Index *index);
 void afficherPhrase(Phrase *sent);
-void afficherMot(Mot *word);
+void afficherMotRecurs(Mot *word);
 void renderPlantUML(Noeud *node, int level, FILE *handle);
 
 #endif
