@@ -262,6 +262,7 @@ int indexerFichier(Index *index, char const *filename)
     int ligne = 0;
 
     Phrase *currentSent = init_Phrase();
+    Mot *added = NULL;
     while (1)
     {
         // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
@@ -283,7 +284,7 @@ int indexerFichier(Index *index, char const *filename)
             str_trim(buff);
             str_low(buff);
             Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
-            add_Mot(currentSent, node);
+            added = add_Mot(currentSent, node);
 
             if (hasPoint != NULL)
             {
@@ -295,7 +296,15 @@ int indexerFichier(Index *index, char const *filename)
             ordre++;
         }
         free(tok);
+        if (added != NULL)
+        {
+            added->lineEnd = true;
+        }
         ligne++;
+    }
+    if (added != NULL)
+    {
+        added->lineEnd = false;
     }
     index->nbLignes = ligne;
 
@@ -336,29 +345,42 @@ void afficherOccurencesMot(Index *index, const char *mot)
 
 void construireTexte(Index *index, const char *destFile)
 {
-    int lineSize = 10;
-    Noeud **line = calloc(lineSize * index->nbLignes, sizeof(Noeud));
-    buildTextBuffInfixe(index->racine, line, lineSize);
+    Phrase *sent = index->phrases;
+    FILE *file = fopen(destFile, "w");
+    parseSentences(sent, file);
+    fclose(file);
+}
 
-    for (int i = 0; i < lineSize * index->nbLignes; i++)
+void parseSentences(Phrase *sent, FILE *handle)
+{
+    if (sent != NULL)
     {
-        printf("%s\n", (*(line + i))->mot);
+        parseSentences(sent->suivante, handle);
+        parseWords(sent->mots, handle);
+        fprintf(handle, ".");
     }
 }
 
-void buildTextBuffInfixe(Noeud *node, Noeud **buff, int lineSize)
+void parseWords(Mot *word, FILE *handle)
 {
-    if (node != NULL)
+    if (word != NULL)
     {
-        Position *pos = node->listePositions;
-        while (pos != NULL)
+        char *buff = word->noeud->mot;
+        if (word->suivant == NULL)
         {
-            *(buff + pos->ordre + (lineSize * pos->numeroLigne)) = node;
-
-            pos = pos->suivant;
+            buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
+            strcpy(buff, word->noeud->mot);
+            str_cap(buff);
         }
-        buildTextBuffInfixe(node->gauche, buff, lineSize);
-        buildTextBuffInfixe(node->droit, buff, lineSize);
+        else
+        {
+            parseWords(word->suivant, handle);
+        }
+        fprintf(handle, " %s", buff);
+        if (word->lineEnd)
+        {
+            fprintf(handle, "\n");
+        }
     }
 }
 
@@ -423,18 +445,20 @@ Mot *init_Mot(Noeud *node)
 {
     Mot *word = malloc(sizeof(Mot));
     word->noeud = node;
+    word->lineEnd = false;
     word->suivant = NULL;
     return word;
 }
 
-void add_Mot(Phrase *sent, Noeud *node)
+Mot *add_Mot(Phrase *sent, Noeud *node)
 {
     if (sent == NULL || node == NULL)
-        return;
+        return NULL;
 
     Mot *word = init_Mot(node);
     word->suivant = sent->mots;
     sent->mots = word;
+    return word;
 }
 
 // Fonctions d'affichage pour le débogage

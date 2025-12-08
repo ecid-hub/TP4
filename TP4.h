@@ -26,6 +26,7 @@ typedef struct t_Noeud
 typedef struct t_Mot
 {
     Noeud *noeud;
+    bool lineEnd;
     struct t_Mot *suivant;
 } Mot;
 
@@ -78,9 +79,10 @@ Phrase *init_Phrase();
 void add_Phrase(Index *index, Phrase *sent);
 Phrase *get_Phrase(Index *index, int number);
 Mot *init_Mot(Noeud *node);
-void add_Mot(Phrase *sent, Noeud *node);
+Mot *add_Mot(Phrase *sent, Noeud *node);
 
-void buildTextBuffInfixe(Noeud *node, Noeud **buff, int lineSize);
+void parseSentences(Phrase *sent, FILE *handle);
+void parseWords(Mot *word, FILE *handle);
 
 // Fonctions ajoutées pour le debogage
 
