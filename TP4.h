@@ -42,6 +42,7 @@ typedef struct t_Index
     int nbMotsDistincts;
     int nbMotsTotal;
     int nbPhrasesTotal;
+    int nbLignes;
     Phrase *phrases;
 } Index;
 
@@ -57,11 +58,11 @@ void free_Position(Position *pos);
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
 void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
-int indexerFichier(Index *index, char const *filename);
+int indexerFichier(Index *index, char const *sourceFile);
 
 Noeud *rechercherMot(Index *index, const char *mot);
 void afficherOccurencesMot(Index *index, const char *mot);
-void construireTexte(Index *index, const char *filename);
+void construireTexte(Index *index, const char *destFile);
 
 // Fonctions ajoutées
 
@@ -78,6 +79,8 @@ void add_Phrase(Index *index, Phrase *sent);
 Phrase *get_Phrase(Index *index, int number);
 Mot *init_Mot(Noeud *node);
 void add_Mot(Phrase *sent, Noeud *node);
+
+void buildTextBuffInfixe(Noeud *node, Noeud **buff, int lineSize);
 
 // Fonctions ajoutées pour le debogage
 

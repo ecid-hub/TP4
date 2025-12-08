@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 200
+#define MAX_LINE_LENGTH 300
 
 Position *init_Position(int ligne, int ordre, int phrase)
 {
@@ -32,6 +32,7 @@ Index *init_Index()
     res->nbMotsDistincts = 0;
     res->nbMotsTotal = 0;
     res->nbPhrasesTotal = 0;
+    res->nbLignes = 0;
     res->racine = NULL;
     res->phrases = NULL;
     return res;
@@ -263,6 +264,7 @@ int indexerFichier(Index *index, char const *filename)
     Phrase *currentSent = init_Phrase();
     while (1)
     {
+        // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
         char *ret = fgets(line, sizeof(char) * MAX_LINE_LENGTH, file); // on lit la ligne brute
         if (ret == NULL)
         {
@@ -295,7 +297,7 @@ int indexerFichier(Index *index, char const *filename)
         free(tok);
         ligne++;
     }
-    // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
+    index->nbLignes = ligne;
 
     return 1;
 }
@@ -329,6 +331,34 @@ void afficherOccurencesMot(Index *index, const char *mot)
             afficherPhrase(sent);
             pos = pos->suivant;
         }
+    }
+}
+
+void construireTexte(Index *index, const char *destFile)
+{
+    int lineSize = 10;
+    Noeud **line = calloc(lineSize * index->nbLignes, sizeof(Noeud));
+    buildTextBuffInfixe(index->racine, line, lineSize);
+
+    for (int i = 0; i < lineSize * index->nbLignes; i++)
+    {
+        printf("%s\n", (*(line + i))->mot);
+    }
+}
+
+void buildTextBuffInfixe(Noeud *node, Noeud **buff, int lineSize)
+{
+    if (node != NULL)
+    {
+        Position *pos = node->listePositions;
+        while (pos != NULL)
+        {
+            *(buff + pos->ordre + (lineSize * pos->numeroLigne)) = node;
+
+            pos = pos->suivant;
+        }
+        buildTextBuffInfixe(node->gauche, buff, lineSize);
+        buildTextBuffInfixe(node->droit, buff, lineSize);
     }
 }
 
@@ -561,6 +591,7 @@ int main()
     // afficherArbre(rechercherMot(index, "oiseau"), 0);
     // afficherPhrase(index->phrases);
     afficherOccurencesMot(index, "oiseau");
+    construireTexte(index, "test.zub");
     free_Index(&index);
 
     return 0;
