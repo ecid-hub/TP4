@@ -190,7 +190,6 @@ int compare(const char *mot1, const char *mot2)
     return 0;
 }
 
-// TODO: 2 case redondants, peuvent être absorbés par la boucle
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 {
     if (index == NULL)
@@ -202,21 +201,11 @@ Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phras
     Noeud *courant = index->racine;
     Noeud *pred = NULL;
 
-    // redondant
-    if (courant == NULL)
-    {
-        Noeud *node = init_Noeud(mot);
-        ajouterPosition(node, ligne, ordre, phrase);
-        index->racine = node;
-        index->nbMotsTotal++;
-        index->nbMotsDistincts++;
-        return node;
-    } // On gère le cas où l'arbre est vide
-
+    int comp;
     while (courant != NULL)
     {
         // Si le mot existe déjà dans l'indexe on s'arrête quand on est dedans, sinon on s'arrête quand on est sur un feuille
-        int comp = compare(courant->mot, mot);
+        comp = compare(courant->mot, mot);
 
         if (comp == -1)
         {
@@ -239,20 +228,28 @@ Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phras
         }
     } // Ici, nous sommes arrivés au moment où pred est une feuille.
 
-    // TODO: redondant
-    Noeud *n = init_Noeud(mot);
-    ajouterPosition(n, ligne, ordre, phrase);
+    Noeud *node = init_Noeud(mot);
+    ajouterPosition(node, ligne, ordre, phrase);
+
     index->nbMotsTotal++;
     index->nbMotsDistincts++;
-    if (compare(pred->mot, mot) == 1)
+    if (pred == NULL)
     {
-        // Alors on insère le nouveau noeud à gauche
-        pred->gauche = n;
+        index->racine = node;
     }
     else
-        pred->droit = n; // La cas d'égalité a déjà été traité plus haut
-
-    return n;
+    {
+        if (comp == 1)
+        {
+            // Alors on insère le nouveau noeud à gauche
+            pred->gauche = node;
+        }
+        else
+        {
+            pred->droit = node; // La cas d'égalité a déjà été traité plus haut
+        }
+    }
+    return node;
 }
 
 int indexerFichier(Index *index, char const *filename)
