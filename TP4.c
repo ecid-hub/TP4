@@ -237,11 +237,12 @@ void ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase)
 
 int indexerFichier(Index *index, char const *filename)
 {
-    const char *separators = " ";
+    const char *separators = " "; // Il faudrait aussi prendre en compte les points, les virgules, les points virgules...
 
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
     int ligne = 0;
+    int nb_mots = 0 ; // Je rajoute la variable qui compte le nombre de mots
 
     while (1)
     {
@@ -253,28 +254,33 @@ int indexerFichier(Index *index, char const *filename)
 
         int ordre = 0;
         int phrase = 0;
-        char *tok = strtok(ret, separators);
+        char *tok = strtok(ret, separators); // strok permet de découper la chaine de caractère avec separator 
         while (tok != NULL)
         {
-            char *hasPoint = strchr(tok, '.');
+            char *hasPoint = strchr(tok, '.'); // Renvoie un pointeur vers la première occurence de '.'
 
-            char *buff = trim(tok);
+            char *buff = trim(tok); //r etourne la chaine sans espaces ou choses superflues
             ajouterOccurence(index, buff, ligne, ordre, phrase);
+            nb_mots ++ ; // ON incrémente le nombre de mots
 
             if (hasPoint != NULL)
             {
-                phrase++;
+                phrase++; // Si on a trouvé un point alors on incrémente le numéro de phrase 
             }
-            tok = strtok(NULL, separators);
+            tok = strtok(NULL, separators); // On lit le prochain mot de la ligne ...
             ordre++;
         }
         free(tok);
-        ligne++;
+        ligne++; // Ici on est arrivés au bout de la ligne 
     }
     // une ligne ne doit pas faire plus de MAX_LINE_LENGTH char
 
-    return 1;
+    return nb_mots; // D' après la consigne, on doit renvoyer le nombre demots lus.
+
 }
+
+
+
 
 // Fonctions d'affichage pour le débogage
 void afficherPositions(Position *liste)
