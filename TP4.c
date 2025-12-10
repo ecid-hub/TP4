@@ -309,7 +309,7 @@ int indexerFichier(Index *index, char const *filename)
     }
     index->nbLignes = ligne;
 
-    return nb_mots; // D' après la consigne, on doit renvoyer le nombre demots lus.
+    return nb_mots; // D' après la consigne, on doit renvoyer le nombre de mots lus.
 
 }
 
@@ -497,7 +497,7 @@ void afficherArbre(Noeud *noeud, int niveau)
     afficherArbre(noeud->gauche, niveau + 1);
 }
 
-void afficherIndex(Index *index)
+void afficher_caracteristiques_Index(Index *index)
 {
     printf("\n========== INDEX ==========\n");
     printf("Nombre total de mots: %d\n", index->nbMotsTotal);
@@ -581,11 +581,11 @@ void renderPlantUML(Noeud *node, int level, FILE *handle)
 }
 
 // Programme de test
-int main()
-{
-    Index *index = init_Index();
+//int main()
+//{
+ //   Index *index = init_Index();
 
-    indexerFichier(index, "animaux");
+ //   indexerFichier(index, "animaux");
 
     // printf("Test 1: Ajout de différents mots\n");
     // ajouterOccurence(index, "chat", 1, 1, 1);
@@ -613,12 +613,12 @@ int main()
     // printf("Nombre total de mots indexés: %d\n", index->nbMotsTotal);
     // printf("Nombre de mots distincts: %d\n", index->nbMotsDistincts);
 
-    afficherIndex(index);
+   // afficher_caracteristiques_Index(index);
     // afficherArbre(rechercherMot(index, "oiseau"), 0);
     // afficherPhrase(index->phrases);
-    afficherOccurencesMot(index, "oiseau");
-    construireTexte(index, "test.zub");
-    free_Index(&index);
+   // afficherOccurencesMot(index, "oiseau");
+    //construireTexte(index, "test.zub");
+    //free_Index(&index);
 
-    return 0;
-}
+  //  return 0;
+//}

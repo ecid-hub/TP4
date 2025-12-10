@@ -47,6 +47,8 @@ typedef struct t_Index
     Phrase *phrases;
 } Index;
 
+// Fonctions de gestion des struct 
+
 Position *init_Position(int ligne, int ordre, int phrase);
 Noeud *init_Noeud(char *mot);
 Index *init_Index();
@@ -56,6 +58,7 @@ void free_Noeud(Noeud *node);
 void free_Position(Position *pos);
 
 // Fonctions de base
+
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
 void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
@@ -63,6 +66,7 @@ int indexerFichier(Index *index, char const *sourceFile);
 
 Noeud *rechercherMot(Index *index, const char *mot);
 void afficherOccurencesMot(Index *index, const char *mot);
+void afficher_caracteristiques_Index(Index *index);
 void construireTexte(Index *index, const char *destFile);
 
 // Fonctions ajoutées
@@ -88,7 +92,7 @@ void parseWords(Mot *word, FILE *handle);
 
 void afficherPositions(Position *liste);
 void afficherArbre(Noeud *noeud, int niveau);
-void afficherIndex(Index *index);
+
 void afficherPhrase(Phrase *sent);
 void afficherMotRecurs(Mot *word);
 void renderPlantUML(Noeud *node, int level, FILE *handle);
