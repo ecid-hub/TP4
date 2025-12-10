@@ -1,8 +1,4 @@
 #include "TP4.h"
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_LINE_LENGTH 300
 
 Position *init_Position(int ligne, int ordre, int phrase)
 {
@@ -187,6 +183,8 @@ Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phras
     return node;
 }
 
+
+// Cette fonction permet de créer un index à partir d'un fichier.
 int indexerFichier(Index *index, char const *filename)
 {
     const char *separators = " "; // Il faudrait aussi prendre en compte les points, les virgules, les points virgules...
@@ -194,7 +192,6 @@ int indexerFichier(Index *index, char const *filename)
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
     int ligne = 0;
-    int nb_mots = 0; // Je rajoute la variable qui compte le nombre de mots
 
     Phrase *currentSent = init_Phrase();
     Mot *added = NULL;
@@ -234,7 +231,7 @@ int indexerFichier(Index *index, char const *filename)
             tok = strtok(NULL, separators); // On lit le prochain mot de la ligne ...
             ordre++;
         }
-        free(tok);
+        //free(tok);
         if (added != NULL)
         {
             added->lineEnd = true;
@@ -247,15 +244,57 @@ int indexerFichier(Index *index, char const *filename)
     }
     index->nbLignes = ligne;
 
-    return nb_mots; // D' après la consigne, on doit renvoyer le nombre de mots lus.
+    return index->nbMotsTotal; // D' après la consigne, on doit renvoyer le nombre de mots lus.
+}
+
+
+// Cette fonction permet d'afficher les caractèristiques de l'index **index**
+void afficher_caracteristiques_Index(Index *index)
+{
+    printf("\n========== INDEX ==========\n");
+    printf("Nombre total de mots: %d\n", index->nbMotsTotal);
+    printf("Nombre de mots distincts: %d\n\n", index->nbMotsDistincts);
+    // afficherArbre(index->racine, 0);
+    FILE *handle = fopen("tree.plantuml", "w");
+    renderPlantUML(index->racine, 1, handle);
+    fclose(handle);
+    printf("===========================\n\n");
+
+}
+
+
+//Cette fonction permet d'afficher les phrases qui contiennent les occurences d'un mot
+void afficherMotRecurs(Mot *word)
+{
+    if (word != NULL)
+    {
+        char *buff = word->noeud->mot;
+        bool allocated = false;  // Flag pour savoir si on a alloué
+        
+        if (word->suivant == NULL)
+        {
+            buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
+            strcpy(buff, word->noeud->mot);
+            str_cap(buff);
+            allocated = true;  // On note qu'on a alloué
+        }
+        else
+        {
+            afficherMotRecurs(word->suivant);
+        }
+        
+        printf(" %s", buff);
+        
+        if (allocated)  // On libère uniquement si on a alloué
+        {
+            free(buff);
+        }
+    }
 }
 
 
 
-
-
-
-
+//Cette fonction permet d'affiher les ocurences d'un mot dans un index 
 void afficherOccurencesMot(Index *index, const char *mot)
 {
     if (index == NULL)
@@ -264,9 +303,9 @@ void afficherOccurencesMot(Index *index, const char *mot)
     char *word = malloc(strlen(mot) + 1);
     strcpy(word, mot);
     str_trim(word);
-    str_low(word);
+    str_low(word); // On effectue ces opérations afin de ne plus se soucier des caractères indésirables et de la casse
 
-    Noeud *node = rechercherMot(index, word);
+    Noeud *node = rechercherMot(index, word); 
     free(word);
     if (node != NULL)
     {
@@ -283,6 +322,8 @@ void afficherOccurencesMot(Index *index, const char *mot)
     }
 }
 
+
+// Cette fonctionpermet de créer le fichier texte en fonction d'un index 
 void construireTexte(Index *index, const char *destFile)
 {
     Phrase *sent = index->phrases;
@@ -292,7 +333,343 @@ void construireTexte(Index *index, const char *destFile)
 }
 
 
+void rechercherEtAfficherMot(Index *index, const char *mot)
+{
+    if (index == NULL)
+    {
+        printf("Index vide.\n");
+        return;
+    }
+    
+    
+    char *word = malloc(strlen(mot) + 1);
+    strcpy(word, mot);
+    str_trim(word); // On normalise le mot que l'on cherche
+    str_low(word);
+    
+    
+    Noeud *node = rechercherMot(index, word); // On recherche le mot 
+    
+    if (node == NULL)
+    {
+        printf("Le mot \"%s\" n'a pas ete trouve dans l'index.\n", word); //Dans le cas où on ne l'a pas trouvé
+        free(word);
+        return;
+    }
+    
+    
+    printf("\n========== RECHERCHE ==========\n");
+    printf("Mot : \"%s\"\n", node->mot);
+    printf("Occurences : %d\n", node->nbOccurence);
+    printf("Positions : ");
+    afficherPositions(node->listePositions);                 // Un affichage joli ...
+    printf("===============================\n\n");
+    
+    free(word);
+}
 
+/////////////////////   Les fonctions qui suivent ont étaient ajouté   //////////////////////
+
+
+// Cette fonction tranforme toutes les lettres en minuscule
+char char_low(char c)
+{
+    
+    if (c <= 'Z' && c >= 'A')
+    {
+        return c + 'a' - 'A';
+    }
+    return c;
+}
+
+
+// Cette fonction transforme toutes les lettres en majuscules
+char char_cap(const char c)
+{
+    if (c <= 'z' && c >= 'a')
+    {
+        return c + 'A' - 'a';
+    }
+    return c;
+}
+
+
+// Cette fonction transforme une chaine de caractère en chaine de carcateres minuscules
+void str_low(char *str)
+{
+    for (int i = 0; str[i]; i++)
+    {
+        if (str[i] != '\0')
+        {
+            str[i] = char_low(str[i]);
+        }
+    }
+}
+
+
+// Cette fonction transforme une chaîne de caractères en caractères majuscules
+void str_cap(char *str)
+{
+    str[0] = char_cap(str[0]);
+}
+
+
+// Cette fonction prend une chaîne de caractère et lui retire tousles points et les expaces 
+void str_trim(char *str)
+{
+    char buff[300 * sizeof(char)];
+    int indexBuff = 0;
+    int i = 0;
+    char *ptr = str;
+    while (*ptr != '\0')
+    {
+        if (*ptr != ' ' && *ptr != '\n' && *ptr != '.')
+        {
+            buff[indexBuff++] = *ptr;
+        }
+        ptr++;
+    }
+    buff[indexBuff++] = '\0';
+    strcpy(str, buff);
+}
+
+
+//Cette fonction permet de comparer deux caractères sans se soucier de la casse
+int compare(const char *mot1, const char *mot2)
+{
+    const char *c1 = mot1;
+    const char *c2 = mot2;
+
+    while (*c1 != '\0' && *c2 != '\0' && *c1 == *c2)
+    {
+        c1++;
+        c2++;
+    }
+    if (*c1 == '\0' && *c2 == '\0')
+    {
+        return 0;
+    }
+    if (*c1 == '\0')
+    {
+        return -1;
+    }
+    if (*c2 == '\0')
+    {
+        return 1;
+    }
+    if (*c1 < *c2)
+    {
+        return -1;
+    }
+    if (*c1 > *c2)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+
+// Cette fonction est une recherche dans un ABRà partir d'un noeud. On renvoie le noeud qui contient le mot recherché
+Noeud *get_node(Noeud *node, const char *mot)
+{
+    if (node == NULL)
+    {
+        return NULL;
+    }
+    int comp = compare(node->mot, mot);
+
+    if (comp == -1)
+    {
+        // Dans ce cas, notre mot se trouve à droite de l'arbre
+        return  get_node(node->droit, mot);
+    }
+    else if (comp == 1)
+    {
+        // A l'inverse dans ce cas, c'est que notre mot doit être dans la partie gauche
+        return get_node(node->gauche, mot);
+    }
+    else
+    {
+        // Dans ce cas, les deux mots sont identiques, donc inutile de créér unnouveau noeud
+        return node;
+    }
+}
+
+// Cette fonction renvoie le noeud contenant le mot **mot** dans l'index **index**
+Noeud *rechercherMot(Index *index, const char *mot)
+{
+    return get_node(index->racine, mot);
+}
+
+//Cette fonction affiche un e liste mot représenté sous la forme d'une liste chaînée de caractères dans un fichier 
+void parseWords(Mot *word, FILE *handle)
+{
+    if (word != NULL)
+    {
+        char *buff = word->noeud->mot;
+        if (word->suivant == NULL)
+        {
+            buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
+            strcpy(buff, word->noeud->mot);
+            str_cap(buff);
+        }
+        else
+        {
+            parseWords(word->suivant, handle);
+        }
+        fprintf(handle, " %s", buff);
+        if (word->lineEnd)
+        {
+            fprintf(handle, "\n");
+        }
+    }
+}
+
+
+// Cette fonction affiche une liste de phrases phrase stockée sous forme de liste chaînée dans un fichier
+void parseSentences(Phrase *sent, FILE *handle)
+{
+    if (sent != NULL)
+    {
+        parseSentences(sent->suivante, handle);
+        parseWords(sent->mots, handle);
+        fprintf(handle, ".");
+    }
+}
+
+
+// Cette fonction ajoute une phrase dans un index 
+void add_Phrase(Index *index, Phrase *sent)
+{
+    if (index == NULL || sent == NULL)
+    {
+        return;
+    }
+
+    index->nbPhrasesTotal++;
+    sent->suivante = index->phrases;
+    index->phrases = sent;
+}
+
+
+//Cette fonction rencoie un pointeur vers la nième phrase d'un index
+Phrase *get_Phrase(Index *index, int number)
+{
+    if (index == NULL)
+        return NULL;
+    Phrase *curr = index->phrases;
+    for (int i = 0; i < (index->nbPhrasesTotal - 1 - number); i++)
+    {
+        curr = curr->suivante;
+    }
+    return curr;
+}
+
+
+//Cette fonction ajoute un mot dans une phrase 
+Mot *add_Mot(Phrase *sent, Noeud *node)
+{
+    if (sent == NULL || node == NULL)
+        return NULL;
+
+    Mot *word = init_Mot(node);
+    word->suivant = sent->mots;
+    sent->mots = word;
+    return word;
+}
+
+
+/////////////////// Les fonctions suivantes sont des fonctions uniquement d'affichage ////////////////////
+
+// Fonctions d'affichage pour le débogage
+void afficherPositions(Position *liste)
+{
+    Position *courant = liste;
+    while (courant != NULL)
+    {
+        printf("(l:%d, o:%d, p:%d)",
+               courant->numeroLigne, courant->ordre, courant->numeroPhrase);
+        courant = courant->suivant;
+        if (courant != NULL)
+            printf("->");
+    }
+    printf("\n");
+}
+
+void afficherArbre(Noeud *noeud, int niveau)
+{
+    if (noeud == NULL)
+        return;
+
+    afficherArbre(noeud->droit, niveau + 1);
+
+    for (int i = 0; i < niveau; i++)
+        printf("    ");
+    printf("'%s' (occ:%d) :   ", noeud->mot, noeud->nbOccurence);
+
+    // for (int i = 0; i < niveau; i++)
+    //     printf("    ");
+    // printf("  Positions: ");
+    afficherPositions(noeud->listePositions);
+
+    afficherArbre(noeud->gauche, niveau + 1);
+}
+
+
+
+void afficherPhrase(Phrase *sent)
+{
+    if (sent != NULL)
+    {
+        afficherMotRecurs(sent->mots);
+        printf(".\n");
+    }
+}
+
+
+void renderPlantUML(Noeud *node, int level, FILE *handle)
+{
+
+    if (level == 1)
+    {
+        fprintf(handle, "@startmindmap index\n");
+        fprintf(handle, "top to bottom direction\n\n");
+    }
+
+    char stars[level + 1];
+    for (int i = 0; i < level; i++)
+    {
+        stars[i] = '*';
+    }
+    stars[level] = '\0';
+
+    if (node != NULL)
+    {
+        fprintf(handle, "%s:%s\n", stars, node->mot);
+        fprintf(handle, "<code>\n");
+        Position *cur = node->listePositions;
+        while (cur != NULL)
+        {
+            fprintf(handle, "(l:%d, o:%d, p:%d)\n", cur->numeroLigne, cur->ordre, cur->numeroPhrase);
+            cur = cur->suivant;
+        }
+
+        fprintf(handle, "</code>\n;\n");
+
+        renderPlantUML(node->gauche, level + 1, handle);
+        renderPlantUML(node->droit, level + 1, handle);
+    }
+    else
+    {
+        fprintf(handle, "%s %s\n", stars, "NULL");
+    }
+
+    if (level == 1)
+    {
+        fprintf(handle, "@endmindmap\n");
+    }
+}
 
 
 

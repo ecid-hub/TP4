@@ -45,20 +45,16 @@ int main() {
                 }
                 break; 
                 
-            case 4: // Rechercher un mot 
-                if (!fichier_charge) {
-                    printf("Veuillez d'abord charger un fichier.\n");
-                } else { 
-                    char mot[200];
-                    Mot* m;
-                    Noeud* n;
-                    printf("Saisissez le mot a chercher : ");
-                    scanf("%s", mot);  
-                    n = init_Noeud(mot);
-                    m = init_Mot(n);
-                    afficherMotRecurs(m);
-                }
-                break; 
+               case 4: // Rechercher un mot
+    if (!fichier_charge) {
+        printf("Veuillez d'abord charger un fichier.\n");
+    } else { 
+        char mot[200];
+        printf("Saisissez le mot a chercher : ");
+        scanf("%s", mot);
+        rechercherEtAfficherMot(i, mot);
+    }
+    break;
                 
             case 5: // Afficher les occurences d'un mot  
                 if (!fichier_charge) {

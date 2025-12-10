@@ -1,8 +1,11 @@
-#ifndef TP3_H
-#define TP3_H
+#ifndef TP4_H
+#define TP4_H
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#define MAX_LINE_LENGTH 300
 
 // Indexation primaire
 typedef struct t_Position
@@ -67,7 +70,10 @@ int indexerFichier(Index *index, char const *sourceFile);
 Noeud *rechercherMot(Index *index, const char *mot);
 void afficherOccurencesMot(Index *index, const char *mot);
 void afficher_caracteristiques_Index(Index *index);
+
 void construireTexte(Index *index, const char *destFile);
+
+void rechercherEtAfficherMot(Index *index, const char *mot);
 
 // Fonctions ajoutées
 
