@@ -260,7 +260,7 @@ int indexerFichier(Index *index, char const *filename)
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
     int ligne = 0;
-    int nb_mots = 0 ; // Je rajoute la variable qui compte le nombre de mots
+    int nb_mots = 0; // Je rajoute la variable qui compte le nombre de mots
 
     Phrase *currentSent = init_Phrase();
     Mot *added = NULL;
@@ -275,7 +275,7 @@ int indexerFichier(Index *index, char const *filename)
 
         int ordre = 0;
         int phrase = 0;
-        char *tok = strtok(ret, separators); // strok permet de découper la chaine de caractère avec separator 
+        char *tok = strtok(ret, separators); // strok permet de découper la chaine de caractère avec separator
         while (tok != NULL)
         {
             char *hasPoint = strchr(tok, '.'); // Renvoie un pointeur vers la première occurence de '.'
@@ -284,8 +284,12 @@ int indexerFichier(Index *index, char const *filename)
             strcpy(buff, tok);
             str_trim(buff);
             str_low(buff);
-            Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
-            added = add_Mot(currentSent, node);
+            if (strlen(buff) != 0)
+            {
+
+                Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
+                added = add_Mot(currentSent, node);
+            }
 
             if (hasPoint != NULL)
             {
@@ -310,7 +314,6 @@ int indexerFichier(Index *index, char const *filename)
     index->nbLignes = ligne;
 
     return nb_mots; // D' après la consigne, on doit renvoyer le nombre de mots lus.
-
 }
 
 Noeud *rechercherMot(Index *index, const char *mot)
