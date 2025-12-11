@@ -1,6 +1,11 @@
 .vscode/
 TP4
+code/TP4
+code/main
+main
+build/
 TP4.exe
+cmake-build-debug/
 .idea/
 tree_render.uml
 tree.plantuml
