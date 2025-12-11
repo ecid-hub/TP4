@@ -1,8 +1,11 @@
-#ifndef TP3_H
-#define TP3_H
+#ifndef TP4_H
+#define TP4_H
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#define MAX_LINE_LENGTH 300
 
 // Indexation primaire
 typedef struct t_Position
@@ -47,6 +50,8 @@ typedef struct t_Index
     Phrase *phrases;
 } Index;
 
+// Fonctions de gestion des struct 
+
 Position *init_Position(int ligne, int ordre, int phrase);
 Noeud *init_Noeud(char *mot);
 Index *init_Index();
@@ -58,6 +63,7 @@ void free_Phrase(Phrase *sent);
 void free_Mot(Mot *word);
 
 // Fonctions de base
+
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
 void ajouterPosition(Noeud *mot, int ligne, int ordre, int phrase);
 
@@ -65,7 +71,11 @@ int indexerFichier(Index *index, char const *sourceFile);
 
 Noeud *rechercherMot(Index *index, const char *mot);
 void afficherOccurencesMot(Index *index, const char *mot);
+void afficher_caracteristiques_Index(Index *index);
+
 void construireTexte(Index *index, const char *destFile);
+
+void rechercherEtAfficherMot(Index *index, const char *mot);
 
 // Fonctions ajoutées
 
@@ -90,7 +100,7 @@ void parseWords(Mot *word, FILE *handle);
 
 void afficherPositions(Position *liste);
 void afficherArbre(Noeud *noeud, int niveau);
-void afficherIndex(Index *index);
+
 void afficherPhrase(Phrase *sent);
 void afficherMotRecurs(Mot *word);
 void renderPlantUML(Noeud *node, int level, FILE *handle);
