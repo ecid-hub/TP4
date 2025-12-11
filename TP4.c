@@ -41,6 +41,7 @@ Index *init_Index()
 void free_Index(Index **index)
 {
     free_Noeud((*index)->racine);
+    free_Phrase((*index)->phrases);
     free(*index);
     *index = NULL;
 }
@@ -63,6 +64,25 @@ void free_Position(Position *pos)
     {
         free_Position(pos->suivant);
         free(pos);
+    }
+}
+
+void free_Phrase(Phrase *sent)
+{
+    if (sent != NULL)
+    {
+        free_Mot(sent->mots);
+        free_Phrase(sent->suivante);
+        free(sent);
+    }
+}
+
+void free_Mot(Mot *word)
+{
+    if (word != NULL)
+    {
+        free_Mot(word->suivant);
+        free(word);
     }
 }
 
@@ -286,9 +306,12 @@ int indexerFichier(Index *index, char const *filename)
             str_low(buff);
             if (strlen(buff) != 0)
             {
-
                 Noeud *node = ajouterOccurence(index, buff, ligne, ordre, phrase);
                 added = add_Mot(currentSent, node);
+            }
+            else
+            {
+                free(buff);
             }
 
             if (hasPoint != NULL)
@@ -300,7 +323,6 @@ int indexerFichier(Index *index, char const *filename)
             tok = strtok(NULL, separators); // On lit le prochain mot de la ligne ...
             ordre++;
         }
-        free(tok);
         if (added != NULL)
         {
             added->lineEnd = true;
@@ -312,6 +334,8 @@ int indexerFichier(Index *index, char const *filename)
         added->lineEnd = false;
     }
     index->nbLignes = ligne;
+    free(currentSent);
+    fclose(file);
 
     return nb_mots; // D' après la consigne, on doit renvoyer le nombre demots lus.
 }
@@ -371,17 +395,20 @@ void parseWords(Mot *word, FILE *handle)
     if (word != NULL)
     {
         char *buff = word->noeud->mot;
-        if (word->suivant == NULL)
+        if (word->suivant != NULL)
+        {
+            parseWords(word->suivant, handle);
+            fprintf(handle, " %s", buff);
+        }
+        else
         {
             buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
             strcpy(buff, word->noeud->mot);
             str_cap(buff);
+            fprintf(handle, " %s", buff);
+            free(buff);
         }
-        else
-        {
-            parseWords(word->suivant, handle);
-        }
-        fprintf(handle, " %s", buff);
+
         if (word->lineEnd)
         {
             fprintf(handle, "\n");
@@ -526,17 +553,19 @@ void afficherMotRecurs(Mot *word)
     if (word != NULL)
     {
         char *buff = word->noeud->mot;
-        if (word->suivant == NULL)
+        if (word->suivant != NULL)
+        {
+            afficherMotRecurs(word->suivant);
+            printf(" %s", buff);
+        }
+        else
         {
             buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
             strcpy(buff, word->noeud->mot);
             str_cap(buff);
+            printf(" %s", buff);
+            free(buff);
         }
-        else
-        {
-            afficherMotRecurs(word->suivant);
-        }
-        printf(" %s", buff);
     }
 }
 

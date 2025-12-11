@@ -54,6 +54,8 @@ Index *init_Index();
 void free_Index(Index **index);
 void free_Noeud(Noeud *node);
 void free_Position(Position *pos);
+void free_Phrase(Phrase *sent);
+void free_Mot(Mot *word);
 
 // Fonctions de base
 Noeud *ajouterOccurence(Index *index, char *mot, int ligne, int ordre, int phrase);
