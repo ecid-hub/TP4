@@ -96,6 +96,7 @@ int main()
             break;
 
         case 7: // Quitter
+            free_Index(&i);
             printf("Au revoir!\n");
             break;
 

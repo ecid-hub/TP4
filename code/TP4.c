@@ -496,7 +496,7 @@ int compare(const char *mot1, const char *mot2)
     return 0;
 }
 
-// Cette fonction est une recherche dans un ABRà partir d'un noeud. On renvoie le noeud qui contient le mot recherché
+// Cette fonction est une recherche dans un ABR à partir d'un noeud. On renvoie le noeud qui contient le mot recherché
 Noeud *get_node(Noeud *node, const char *mot)
 {
     if (node == NULL)
@@ -579,7 +579,7 @@ void add_Phrase(Index *index, Phrase *sent)
     index->phrases = sent;
 }
 
-// Cette fonction rencoie un pointeur vers la nième phrase d'un index
+// Cette fonction renvoie un pointeur vers la nième phrase d'un index
 Phrase *get_Phrase(Index *index, int number)
 {
     if (index == NULL)
@@ -632,9 +632,6 @@ void afficherArbre(Noeud *noeud, int niveau)
         printf("    ");
     printf("'%s' (occ:%d) :   ", noeud->mot, noeud->nbOccurence);
 
-    // for (int i = 0; i < niveau; i++)
-    //     printf("    ");
-    // printf("  Positions: ");
     afficherPositions(noeud->listePositions);
 
     afficherArbre(noeud->gauche, niveau + 1);
@@ -651,7 +648,6 @@ void afficherPhrase(Phrase *sent)
 
 void renderPlantUML(Noeud *node, int level, FILE *handle)
 {
-
     if (level == 1)
     {
         fprintf(handle, "@startmindmap index\n");
