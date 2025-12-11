@@ -50,7 +50,7 @@ typedef struct t_Index
     Phrase *phrases;
 } Index;
 
-// Fonctions de gestion des struct 
+// Fonctions de gestion des struct
 
 Position *init_Position(int ligne, int ordre, int phrase);
 Noeud *init_Noeud(char *mot);
@@ -76,6 +76,9 @@ void afficher_caracteristiques_Index(Index *index);
 void construireTexte(Index *index, const char *destFile);
 
 void rechercherEtAfficherMot(Index *index, const char *mot);
+
+void afficherIndex(Index *index);
+void infixe(Noeud *node, char lastChat);
 
 // Fonctions ajoutées
 

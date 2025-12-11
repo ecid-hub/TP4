@@ -49,8 +49,7 @@ int main()
             }
             else
             {
-                // afficherIndex(i);
-                printf("Fonction pas encore implementee.\n");
+                afficherIndex(i);
             }
             break;
 

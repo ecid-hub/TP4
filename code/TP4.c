@@ -377,6 +377,30 @@ void rechercherEtAfficherMot(Index *index, const char *mot)
     free(word);
 }
 
+void afficherIndex(Index *index)
+{
+    infixe(index->racine, '\0');
+}
+
+void infixe(Noeud *node, char lastChat)
+{
+    if (node != NULL)
+    {
+        char firstChar = *(node->mot);
+        infixe(node->gauche, firstChar);
+
+        if (firstChar != lastChat)
+        {
+            printf("\n\n%c\n", char_cap(firstChar));
+        }
+        printf("|--%s\n", node->mot);
+        afficherPositions(node->listePositions);
+        printf("|\n");
+
+        infixe(node->droit, firstChar);
+    }
+}
+
 /////////////////////   Les fonctions qui suivent ont étaient ajouté   //////////////////////
 
 // Cette fonction tranforme toutes les lettres en minuscule
@@ -588,11 +612,11 @@ void afficherPositions(Position *liste)
     Position *courant = liste;
     while (courant != NULL)
     {
-        printf("(l:%d, o:%d, p:%d)",
+        printf("|---(l:%d, o:%d, p:%d)",
                courant->numeroLigne, courant->ordre, courant->numeroPhrase);
         courant = courant->suivant;
         if (courant != NULL)
-            printf("->");
+            printf("\n");
     }
     printf("\n");
 }
