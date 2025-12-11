@@ -625,27 +625,6 @@ void afficherPhrase(Phrase *sent)
     }
 }
 
-void afficherMotRecurs(Mot *word)
-{
-    if (word != NULL)
-    {
-        char *buff = word->noeud->mot;
-        if (word->suivant != NULL)
-        {
-            afficherMotRecurs(word->suivant);
-            printf(" %s", buff);
-        }
-        else
-        {
-            buff = malloc(sizeof(char) * (strlen(word->noeud->mot) + 1));
-            strcpy(buff, word->noeud->mot);
-            str_cap(buff);
-            printf(" %s", buff);
-            free(buff);
-        }
-    }
-}
-
 void renderPlantUML(Noeud *node, int level, FILE *handle)
 {
 
