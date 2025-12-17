@@ -205,6 +205,10 @@ int indexerFichier(Index *index, char const *filename)
     const char *separators = " "; // Il faudrait aussi prendre en compte les points, les virgules, les points virgules...
 
     FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        return -1;
+    }
     char line[MAX_LINE_LENGTH];
     int ligne = 0;
 
@@ -370,7 +374,7 @@ void rechercherEtAfficherMot(Index *index, const char *mot)
     printf("\n========== RECHERCHE ==========\n");
     printf("Mot : \"%s\"\n", node->mot);
     printf("Occurences : %d\n", node->nbOccurence);
-    printf("Positions : ");
+    printf("Positions : \n");
     afficherPositions(node->listePositions); // Un affichage joli ...
     printf("===============================\n\n");
 
@@ -496,7 +500,7 @@ int compare(const char *mot1, const char *mot2)
     return 0;
 }
 
-// Cette fonction est une recherche dans un ABR à partir d'un noeud. On renvoie le noeud qui contient le mot recherché
+// Cette fonction est une recherche dans l'arbre donné. On renvoie le noeud qui contient le mot recherché
 Noeud *get_node(Noeud *node, const char *mot)
 {
     if (node == NULL)

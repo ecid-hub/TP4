@@ -1,4 +1,5 @@
 #include "TP4.c"
+#include <stdio_ext.h>
 
 int main()
 {
@@ -6,7 +7,7 @@ int main()
     char nom_fichier[256];
     Index *i = init_Index();
     int nb_mots = 0;
-    int fichier_charge = 0; // Variable pour savoir si un fichier a été chargé
+    bool fichier_charge = false; // Variable pour savoir si un fichier a été chargé
 
     do
     {
@@ -19,6 +20,8 @@ int main()
         printf("6. Construire le texte a partir de l index\n");
         printf("7. Quitter\n");
         printf("Votre choix : ");
+        __fpurge(stdin);
+        choix = 0;
         scanf("%d", &choix);
 
         switch (choix)
@@ -27,8 +30,15 @@ int main()
             printf("Entrez le nom du fichier : ");
             scanf("%s", nom_fichier);
             nb_mots = indexerFichier(i, nom_fichier);
-            fichier_charge = 1; // Marquer que le fichier est chargé
-            printf("Fichier charge avec succes (%d mots).\n", nb_mots);
+            if (nb_mots == -1)
+            {
+                printf("Erreur lors de l'ouverture du fichier\n");
+            }
+            else
+            {
+                fichier_charge = true; // Marquer que le fichier est chargé
+                printf("Fichier charge avec succes (%d mots).\n", nb_mots);
+            }
             break;
 
         case 2: // Caracteristiques de l index
