@@ -18,7 +18,8 @@ int main()
         printf("4. Rechercher un mot\n");
         printf("5. Afficher les occurences d un mot\n");
         printf("6. Construire le texte a partir de l index\n");
-        printf("7. Quitter\n");
+        printf("7. Generer PlantUML\n");
+        printf("8. Quitter\n");
         printf("Votre choix : ");
         __fpurge(stdin);
         choix = 0;
@@ -33,12 +34,10 @@ int main()
             if (nb_mots == -1)
             {
                 printf("Erreur lors de l'ouverture du fichier\n");
+                break;
             }
-            else
-            {
-                fichier_charge = true; // Marquer que le fichier est chargé
-                printf("Fichier charge avec succes (%d mots).\n", nb_mots);
-            }
+            fichier_charge = true; // Marquer que le fichier est chargé
+            printf("Fichier charge avec succes (%d mots).\n", nb_mots);
             break;
 
         case 2: // Caracteristiques de l index
@@ -105,7 +104,19 @@ int main()
             }
             break;
 
-        case 7: // Quitter
+        case 7:
+            FILE *handle = fopen("tree.plantuml", "w");
+            if (handle == NULL)
+            {
+                printf("Erreur lors de la creation de 'tree.plantuml'\n");
+                break;
+            }
+            renderPlantUML(i->racine, 1, handle);
+            fclose(handle);
+            printf("UML genere dans 'tree.plantuml'\n");
+            break;
+
+        case 8: // Quitter
             free_Index(&i);
             printf("Au revoir!\n");
             break;
@@ -114,7 +125,7 @@ int main()
             printf("Choix invalide, veuillez rentrer un choix valide\n");
             break;
         }
-    } while (choix != 7);
+    } while (choix != 8);
 
     return 0;
 }

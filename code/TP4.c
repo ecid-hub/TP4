@@ -277,9 +277,6 @@ void afficher_caracteristiques_Index(Index *index)
     printf("Nombre total de mots: %d\n", index->nbMotsTotal);
     printf("Nombre de mots distincts: %d\n\n", index->nbMotsDistincts);
     // afficherArbre(index->racine, 0);
-    FILE *handle = fopen("tree.plantuml", "w");
-    renderPlantUML(index->racine, 1, handle);
-    fclose(handle);
     printf("===========================\n\n");
 }
 
